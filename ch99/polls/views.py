@@ -18,7 +18,7 @@ def HTML_Template(articleTag):
     return f'''
     <html>
     <body>
-        <h1>Django</h1>
+        <h1><a href="/">Django</a></h1>
         <ol>
             {ol}
         </ol>

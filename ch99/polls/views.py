@@ -1,7 +1,38 @@
-from django.shortcuts import render, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-import random
+from django.shortcuts import render, HttpResponse, get_object_or_404
+from django.http import HttpResponseRedirect
+from polls.models import Question, Choice
+from django.urls import reverse
+#from django.views.decorators.csrf import csrf_exempt
+#import random
 
+def index(request):
+    latest_question_list = Question.objects.all().order_by('-pub_date')[:5]
+    context = {'latest_question_list': latest_question_list}
+    return render(request, 'polls/index.html', context)
+
+def detail(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'polls/detail.html', {'question': question})
+
+def vote(request, question_id):
+    question = get_object_or_404(Question, pk = question_id)
+    try:
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        return render(request, 'polls/detail.html', {
+            'question': question,
+            'error_message': "You didn't select a choice.",
+        })
+    else:
+        selected_choice.vote += 1
+        selected_choice.save()
+        return HttpResponseRedirect(reverse('polls:results', args=(question.id)))
+
+def results(request, question_id):
+    question = get_object_or_404(Question, pk = question_id)
+    return render(request, 'polls/results.html', {'question': question})
+
+"""
 nextId = 4
 topics = [
     {'id' : 1, 'title' : '전자통신컴퓨터공학부', 'body' : '전자통신컴퓨터공학부에 오신 것을 환영합니다.'},
@@ -72,3 +103,4 @@ def lotto(request):
     for i in range(6):
         c += str(b[i]) + ' '
     return HttpResponse('<h1>오늘의 행운의 번호 = '+c+' 입니다.</h1>')
+"""
